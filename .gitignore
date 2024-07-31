@@ -1,1 +1,25 @@
+# Python cache files
+__pycache__/
+*.pyc
+*.pyo
 
+# Virtual environment
+venv/
+.env/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Logs
+*.log
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
