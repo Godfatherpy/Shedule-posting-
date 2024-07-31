@@ -1,0 +1,27 @@
+{
+  "name": "automated-posting-bot",
+  "description": "A bot that posts files to a target channel every 30 minutes.",
+  "env": {
+    "TOKEN": {
+      "description": "Your Telegram bot token.",
+      "required": true
+    },
+    "OWNER_ID": {
+      "description": "Your Telegram user ID.",
+      "required": true
+    },
+    "STORAGE_CHANNEL": {
+      "description": "The storage channel where files are stored.",
+      "required": true
+    },
+    "TARGET_CHANNEL": {
+      "description": "The target channel where files will be posted.",
+      "required": true
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/python"
+    }
+  ]
+}
