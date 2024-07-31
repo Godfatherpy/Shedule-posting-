@@ -1,22 +1,25 @@
+import os
 from telegram import Bot
 from telegram.ext import Updater, CommandHandler, CallbackContext, JobQueue
 from datetime import datetime, timedelta
-import config  # Import your configuration
 
 # Initialize bot and updater
-bot = Bot(token=config.TOKEN)
-updater = Updater(token=config.TOKEN, use_context=True)
+TOKEN = os.getenv('TOKEN')
+OWNER_ID = int(os.getenv('OWNER_ID'))
+STORAGE_CHANNEL = os.getenv('STORAGE_CHANNEL')
+TARGET_CHANNEL = os.getenv('TARGET_CHANNEL')
+SCHEDULE_INTERVAL = int(os.getenv('SCHEDULE_INTERVAL'))
+
+bot = Bot(token=TOKEN)
+updater = Updater(token=TOKEN, use_context=True)
 job_queue = updater.job_queue
 
 # Store file IDs and their post times
 file_queue = []
 posted_files = set()  # To track posted file IDs to avoid duplicates
 
-# Schedule interval in seconds (hard-coded to 30 minutes)
-SCHEDULE_INTERVAL = 30 * 60  # 30 minutes
-
 def start(update: Update, context: CallbackContext):
-    if update.effective_user.id == config.OWNER_ID:
+    if update.effective_user.id == OWNER_ID:
         welcome_message = (
             "Welcome to the Automated Posting Bot!\n\n"
             "Here’s what you can do:\n"
@@ -34,7 +37,7 @@ def start(update: Update, context: CallbackContext):
         update.message.reply_text("You are not authorized to use this bot.")
 
 def add_file(update: Update, context: CallbackContext):
-    if update.effective_user.id == config.OWNER_ID:
+    if update.effective_user.id == OWNER_ID:
         if context.args:
             file_id = ' '.join(context.args)
             if file_id not in posted_files:
@@ -48,10 +51,10 @@ def add_file(update: Update, context: CallbackContext):
         update.message.reply_text("You are not authorized to use this command.")
 
 def broadcast(update: Update, context: CallbackContext):
-    if update.effective_user.id == config.OWNER_ID:
+    if update.effective_user.id == OWNER_ID:
         if context.args:
             message = ' '.join(context.args)
-            context.bot.send_message(chat_id=config.TARGET_CHANNEL, text=message)
+            context.bot.send_message(chat_id=TARGET_CHANNEL, text=message)
             update.message.reply_text("Message sent to the target channel.")
         else:
             update.message.reply_text("Please provide a message to broadcast.")
@@ -63,15 +66,14 @@ def post_files(context: CallbackContext):
     if file_queue:
         file_id = file_queue.pop(0)
         if file_id not in posted_files:
-            context.bot.forward_message(chat_id=config.TARGET_CHANNEL, from_chat_id=config.STORAGE_CHANNEL, message_id=file_id)
+            context.bot.forward_message(chat_id=TARGET_CHANNEL, from_chat_id=STORAGE_CHANNEL, message_id=file_id)
             posted_files.add(file_id)
         else:
-            context.bot.send_message(chat_id=config.TARGET_CHANNEL, text="No files to post.")
+            context.bot.send_message(chat_id=TARGET_CHANNEL, text="No files to post.")
     else:
-        context.bot.send_message(chat_id=config.TARGET_CHANNEL, text="No files to post.")
+        context.bot.send_message(chat_id=TARGET_CHANNEL, text="No files to post.")
 
 def schedule_jobs():
-    # Post files based on the hard-coded schedule interval
     job_queue.run_repeating(post_files, interval=SCHEDULE_INTERVAL, first=datetime.now() + timedelta(seconds=30))
 
 # Add handlers
